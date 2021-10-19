@@ -7,6 +7,7 @@ class Ship:
     def __init__(self, ai_game):
         #Initalize the ship and set its starting position
         self.screen = ai_game.screen
+        self.settings = ai_game.settings
         self.screen_rect = ai_game.screen.get_rect()
 
         #load the ship and gets its rect (rectangle):
@@ -19,16 +20,25 @@ class Ship:
             #in pygame the origin (0,0) is the top-left corner of the screen; the bottom right is (1200,800)
         self.rect.midbottom = self.screen_rect.midbottom
 
+        #Store a decimal value for the ship's horizontal polistion
+            #naturally just an integer but we're moving things by fractions of pixels
+        self.x = float(self.rect.x)
+
+
         #Movement flag:
         self.moving_right = False
         self.moving_left = False
 
     def update(self):
         #update the ship's position based on the movement flag
-        if self.moving_right:
-            self.rect.x += 1
-        if self.moving_left:
-            self.rect.x -= 1
+        #ensures that the ship doesn't move past the edge of the screen
+        if self.moving_right and self.rect.right < self.screen_rect.right:
+            self.x += self.settings.ship_speed
+        if self.moving_left and self.rect.left > 0:
+            self.x -= self.settings.ship_speed
+
+        #update rect object from self.x
+        self.rect.x = self.x
 
         #draws the image to the screen:
     def blitme(self):
