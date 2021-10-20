@@ -36,5 +36,5 @@ class Alien(Sprite):
         #track alien's exact position with self.x
         #if fleet direction is 1, will move to the right; if -1, will move to the left
         self.x += (self.settings.alien_speed * self.settings.fleet_direction)
-        #use the valu of self.x to updatee the position of the alien's rect
+        #use the value of self.x to update the position of the alien's rect
         self.rect.x = self.x

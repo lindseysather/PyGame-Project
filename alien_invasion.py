@@ -5,6 +5,8 @@ import pygame
 
 from settings import Settings
 from game_stats import GameStats
+from scoreboard import Scoreboard
+from button import Button
 from ship import Ship
 from bullet import Bullet
 from alien import Alien 
@@ -27,6 +29,10 @@ class AlienInvasion:
         self.settings.screen_height = self.screen.get_rect().height
         
         pygame.display.set_caption("Alien Invasion")
+
+        #Create an instance to store game statistics and create a scoreboard
+        self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
         
         #Instance to store game stats
         self.stats = GameStats(self)
@@ -41,6 +47,10 @@ class AlienInvasion:
         self.bg_color = (230, 230, 230)
 
         self._create_fleet()
+
+
+        #Make the Play button
+        self.play_button = Button(self, "Play")
 
 
     def run_game(self):
@@ -76,12 +86,45 @@ class AlienInvasion:
             #KEYDOWN just means you push down a key 
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
+
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
 
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                #get_pos() returns a tuple containing the mouse cursor's x- and y-coordinates when the mouse button is clicked
+                    #this ensures that you only start the game when you click the play button 
+                mouse_pos = pygame.mouse.get_pos()
+                #send coordinate values to _check_play_button method 
+                self._check_play_button(mouse_pos)
+        
+
+    def _check_play_button(self, mouse_pos):
+        '''Start a new game when the player clicks Play'''
+        #collidepoint() checks whether the point of the mouse click overlaps the region defined by the Play button's rect
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        #makes play button only able to be clicked while game is inactive
+        if button_clicked and not self.stats.game_active:
+            #reset game settings (so speed doesn't keep increasing)
+            self.settings.initialize_dynamic_settings()
+            #reset the game statistics so we can play again after we lose:
+            self.stats.reset_stats()
+            #game active when Play is clicked 
+            self.stats.game_active = True
+
+            #get rid of any remaining aliens and bullets
+            self.aliens.empty()
+            self.bullets.empty()
+
+            #create a new fleet and center the ship
+            self._create_fleet()
+            self.ship.center_ship()
+
+            #hide mouse cursor while game is active
+            pygame.mouse.set_visible(False)
+
 
     def _check_keydown_events(self, event):
-        '''Respond to keyprssees.'''
+        '''Respond to keypresses.'''
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = True
         elif event.key == pygame.K_LEFT:
@@ -150,6 +193,8 @@ class AlienInvasion:
             #destroy existing bullets and create new fleet
             self.bullets.empty()
             self._create_fleet()
+            #increases speed of ship, bullets, and aliens for each level
+            self.settings.increase_speed()
 
 
     def _update_aliens(self):
@@ -259,9 +304,10 @@ class AlienInvasion:
             #Pause so player can see ship has been hit
             sleep(0.5)
         
-        #if player has no ships left, game will not be active
+        #if player has no ships left, game will not be active, and mouse cursor will be visible again (so player can click play)
         else:
             self.stats.game_active = False
+            pygame.mouse.set_visible(True)
 
 
     def _check_aliens_bottom(self):
@@ -288,10 +334,20 @@ class AlienInvasion:
 
         #draw alien
         self.aliens.draw(self.screen)
+
+        #Draw the score information
+        self.sb.show_score()
+
+        #draw the play button if game is inactive
+        #after all the other elements to make it visible above all other elements are drawn but before flipping to a new screen
+        if not self.stats.game_active:
+            self.play_button.draw_button()
+
         #make the most recently drawn screen visible:
             #draws an empty screen on each pass through the while loop
             #basically continually updates the display to create the illusion of smooth movement
         pygame.display.flip()
+
 
 if __name__ == '__main__':
     #GAME INSTANCE:
@@ -300,9 +356,11 @@ if __name__ == '__main__':
 
 
 
-'''STOPPED BEFORE CHAPTER 14
+'''STOPPED BEFORE UPDATING THE SCORE AS ALIENS ARE SHOT DOWN (PAGE 290)
 
 ISSUES:
-ALIENS GET REALLY FAST AFTER SHIP HIT (BUT THEN SLOW DOWN)
-4 LIVES INSTEAD OF 3?
+game gets faster when you lose
+alien speed complete disaster
+
+Concerned about line 189
 '''
