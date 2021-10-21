@@ -110,6 +110,12 @@ class AlienInvasion:
             self.stats.reset_stats()
             #game active when Play is clicked 
             self.stats.game_active = True
+            #resets score to 0 after starting a new game 
+            self.sb.prep_score()
+            #update level image
+            self.sb.prep_level()
+            #show how many ships player has to start with
+            self.sb.prep_ships()
 
             #get rid of any remaining aliens and bullets
             self.aliens.empty()
@@ -158,8 +164,6 @@ class AlienInvasion:
 
 
 
-    '''UPDATE FUNCTIONS'''
-
 
     def _update_bullets(self):
         '''Update position of bullets and get rid of old bullets'''
@@ -182,11 +186,27 @@ class AlienInvasion:
         '''Respond to bullet-alien collisions'''
         #Remove any bullets and aliens that hvae collided
         #check for any bullets that have hit aliens
-            #sprite.groupcollide() function compares the rects of each element in one group with another group
+            #sprite.groupcollide() function compares the rects of each element in one group (aliens) with another group (bullets)
             #returns a dictionary containing the bullets and aliens that have collided
             #Key will be a bullet, and the value will be a hit alien
             #True arguments tell Pygame to delete the bullets and aliens that have collided
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+
+        #if collisions exist, alien's value (50) is added to the score
+        if collisions:
+            #loops through all values in the dictionary 
+            for aliens in collisions.values():
+                #calls alien_points from settings (set to 50)
+                    #multiplies value of each alien by the number of aliens in eeach list 
+                        #remember that each value is a list of aliens hit by a single bullet
+                self.stats.score += self.settings.alien_points * len(aliens)
+            
+            #calls prep_score() definition to create a new image for the updated score
+            self.sb.prep_score()
+
+            #need to  call check_high_score() each time an alien is hit after updating the score in _check_bullet_alien_collisions()
+            self.sb.check_high_score() 
+
 
         #check if aliens group is empty
         if not self.aliens:
@@ -195,6 +215,11 @@ class AlienInvasion:
             self._create_fleet()
             #increases speed of ship, bullets, and aliens for each level
             self.settings.increase_speed()
+
+            #Increase level
+            self.stats.level += 1
+            #call prep_level() to make sure new level displays correctly 
+            self.sb.prep_level()
 
 
     def _update_aliens(self):
@@ -292,6 +317,8 @@ class AlienInvasion:
         if self.stats.ships_left > 0:
             #Number of ships is reduced by 1
             self.stats.ships_left -= 1
+            #update scoreboard
+            self.sb.prep_ships()
 
             #Get rid of any remaining aliens and bullets
             self.aliens.empty()
@@ -356,11 +383,7 @@ if __name__ == '__main__':
 
 
 
-'''STOPPED BEFORE UPDATING THE SCORE AS ALIENS ARE SHOT DOWN (PAGE 290)
-
-ISSUES:
-game gets faster when you lose
-alien speed complete disaster
-
-Concerned about line 189
+'''
+FINISHED BUT SCORES AREN'T UPDATING
+CHECK PREP_SCORE??
 '''
