@@ -33,9 +33,6 @@ class AlienInvasion:
         #Create an instance to store game statistics and create a scoreboard
         self.stats = GameStats(self)
         self.sb = Scoreboard(self)
-        
-        #Instance to store game stats
-        self.stats = GameStats(self)
 
         #instance of Ship
         self.ship = Ship(self)
@@ -47,7 +44,6 @@ class AlienInvasion:
         self.bg_color = (230, 230, 230)
 
         self._create_fleet()
-
 
         #Make the Play button
         self.play_button = Button(self, "Play")
